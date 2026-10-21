@@ -13,9 +13,9 @@
 @media(min-width:751px){.main-menu{padding:clamp(28px,5vh,65px) clamp(25px,6vw,110px)}.menu-shell:has(#homeScreen:not([hidden])){margin-left:0}.menu-brand>p{max-width:620px}#homeScreen{margin-top:28px;padding:24px}}
 @media(max-width:750px){#homeScreen{max-width:none}#partyDialog{padding:14px}#partyCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.party-card img{height:175px}.party-info{padding:10px}.party-info h3{font-size:19px}.party-info p,.party-info label{font-size:11px}.party-info>span{font-size:13px;padding:10px 3px}.party-heading h2{font-size:23px}.party-heading>button{font-size:13px}}
 
-/* B15-001: portada original completa, sin recortes ni deformaciones. */
+/* B15-002: portada a todo el ancho y proporción original; controles inferiores superpuestos en PC. */
 .main-menu:has(#homeScreen:not([hidden])){padding:0 0 24px;min-height:100svh;background:linear-gradient(#10171d,#17232e);display:flex;flex-direction:column;justify-content:center}
-.main-menu:has(#homeScreen:not([hidden])) .menu-backdrop{position:relative;inset:auto;z-index:0;flex:none;width:100%;height:min(56.28vw,calc(100svh - 190px));background:#10171d url('portada_B15_001.png') center/contain no-repeat}
+.main-menu:has(#homeScreen:not([hidden])) .menu-backdrop{position:relative;inset:auto;z-index:0;flex:none;width:100%;height:auto;aspect-ratio:1672/941;background:#10171d url('portada_B15_001.png') center/contain no-repeat}
 .main-menu:has(#homeScreen:not([hidden])) .menu-shell{width:min(100% - 32px,680px);max-width:680px;margin:0 auto}
 /* El título está incluido en la ilustración; se conserva el h1 accesible. */
 .main-menu:has(#homeScreen:not([hidden])) .menu-brand{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -24,8 +24,17 @@
 #homeScreen button{min-width:0;min-height:48px;font-size:18px}
 #homeScreen button:focus-visible{outline:3px solid #ffe1a1;outline-offset:4px}
 #homeScreen .menu-footnote{text-align:center;color:#ccd6d8;margin-top:14px}
+/* Botones sobre los extremos inferiores: centro y rostros libres. */
+@media(min-width:751px){
+ .main-menu:has(#homeScreen:not([hidden])){padding:0;justify-content:flex-start}
+ .main-menu:has(#homeScreen:not([hidden])) .menu-shell{position:absolute;z-index:1;left:24px;right:24px;top:min(calc(100% - 72px),calc(100svh - 72px));width:auto;max-width:none;margin:0}
+ #homeScreen{margin:0;padding:0;border:0;background:none;box-shadow:none}
+ #homeScreen .home-buttons{display:flex;flex-direction:row;justify-content:space-between;max-width:none;gap:24px}
+ #homeScreen button{width:230px;max-width:calc(50% - 12px);box-shadow:0 3px 12px #0009}
+ #homeScreen .menu-footnote{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
 @media(max-width:750px){
- .main-menu:has(#homeScreen:not([hidden])){justify-content:flex-start;padding-top:24px}
+ .main-menu:has(#homeScreen:not([hidden])){justify-content:flex-start;padding-top:0}
  .main-menu:has(#homeScreen:not([hidden])) .menu-backdrop{height:auto;aspect-ratio:1672/941}
  .main-menu:has(#homeScreen:not([hidden])) .menu-shell{width:calc(100% - 24px)}
  #homeScreen{padding:18px;margin-top:24px}
