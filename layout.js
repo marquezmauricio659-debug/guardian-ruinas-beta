@@ -1,20 +1,21 @@
-const skillsMedia=window.matchMedia('(max-width:750px)');
-const skillsPanel=document.getElementById('skills-panel');
-const skillsAnchor=document.createComment('skills-panel-home');
-skillsPanel.before(skillsAnchor);
-const skillsDialog=document.getElementById('mobileSkills');
-function adaptSkillsPanel(){
-  if(skillsMedia.matches){document.getElementById('mobileSkillsContent').append(skillsPanel);}
-  else{closeSkillsPanel();skillsAnchor.after(skillsPanel);}
-}
+// B15-003: modal compartido por PC y celular; no cambia el estado del juego.
+const skillsDialog=document.getElementById('skillsDialog');
+let skillsOpener=null;
+let skillsScroll={x:0,y:0};
 function openSkillsPanel(){
-  if(skillsMedia.matches){if(!skillsDialog.open)skillsDialog.showModal();document.body.classList.add('skills-open');}
-  else skillsPanel.scrollIntoView({behavior:'smooth',block:'center'});
+  if(!activeSlot||skillsDialog.open)return;
+  skillsOpener=document.activeElement;
+  skillsScroll={x:window.scrollX,y:window.scrollY};
+  document.body.classList.add('skills-open');
+  skillsDialog.showModal();
 }
-function closeSkillsPanel(){if(skillsDialog.open)skillsDialog.close();document.body.classList.remove('skills-open');}
-skillsDialog.addEventListener('close',()=>document.body.classList.remove('skills-open'));
-skillsMedia.addEventListener('change',adaptSkillsPanel);
-adaptSkillsPanel();
+function closeSkillsPanel(){if(skillsDialog.open)skillsDialog.close();}
+// El cierre nativo con Escape también recorre esta restauración.
+skillsDialog.addEventListener('close',()=>{
+  document.body.classList.remove('skills-open');
+  skillsOpener?.focus({preventScroll:true});
+  window.scrollTo({left:skillsScroll.x,top:skillsScroll.y,behavior:'instant'});
+});
 function partyCardState(k){
  const c=classes[k],active=k===profile.classId,st=active?{hp:s.hp,mp:s.mp,poison:s.poison}:s.party?.[k];
  const dead=(s.fallen||[]).includes(k)||(st?.hp===0);
