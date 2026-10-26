@@ -143,10 +143,15 @@ body.skills-open{overflow:hidden}
 .map-art .level-label{background:#102026dd;border-color:#88784f}
 .map-art .level-stop.selected button{outline:2px solid #ffe6a0;outline-offset:1px}
 /* B15-012: aro seleccionado centrado sobre el medallón, sin desplazar el punto del nivel. */
+/* B15-012: todos los nodos anclados al medallón pintado, en PC y celular.
+   El CSS móvil histórico movía los cinco nodos lejos de la imagen. */
 .map-art{container-type:inline-size}
+.map-art .level-stop{left:var(--x)!important;top:var(--y)!important;transform:translate(-50%,-32px)}
+.map-art .level-stop button{width:64px!important;height:64px!important}
 .map-art .level-stop.selected button{outline:none!important}
-/* Centrado sobre la coordenada del medallón ilustrado; no sobre el botón, que está encima del rótulo. */
-.map-art .level-stop.selected::after{content:'';position:absolute;left:50%;top:50%;width:clamp(28px,4.2cqw,72px);height:clamp(28px,4.2cqw,72px);border:2px solid #ffe6a0;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-sizing:border-box}
+.map-art .level-stop.selected::after{content:none!important}
+.map-art .level-stop.selected button::after{content:'';position:absolute;left:50%;top:50%;width:clamp(28px,4.2cqw,72px);height:clamp(28px,4.2cqw,72px);border:2px solid #ffe6a0;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-sizing:border-box}
+@media(max-width:750px){.map-art .level-stop{transform:translate(-50%,-26px)}.map-art .level-stop button{width:52px!important;height:52px!important}.map-art .level-stop button span{right:12px;bottom:8px}}
 /* Mirar hacia el rival: héroe a la derecha y salamandra a la izquierda. */
 #hero[data-sprite-pose='knight-defend'] .art{transform:scaleX(-1)!important}
 .actor[data-enemy-pose] .art[data-character='salamander']{transform:scaleX(-1)!important}
