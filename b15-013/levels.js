@@ -99,7 +99,53 @@ function selectMapLevel(id){
 }
 function selectMapCity(){if(busy)return;selectedMapLevel=6;renderLevelMap();const details=$('levelMap').querySelector('.map-details');if(details)details.scrollIntoView({behavior:'smooth',block:'center'});}
 function activateMapSelection(){if(selectedMapLevel===6){enterMapCity();return;}playMapLevel();}
-function enterMapCity(){if(busy)return;const saved=readSlot(mapSlot);if(!saved)return;if(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked)return;$('levelMap').hidden=true;$('cityView').hidden=false;window.scrollTo(0,0);}
+
+/* B15-013: mapa de ciudad y servicios compartidos con la campaña. */
+const CITY_LOCATIONS=[
+ {id:'castillo',name:'Castillo',x:49,y:11,description:'Sede del gobierno. Las misiones principales llegarán más adelante.'},
+ {id:'gremio',name:'Gremio',x:16,y:27,description:'Encargos y recompensas. Próximamente.'},
+ {id:'posada',name:'Posada',x:70,y:31,description:'Descanso y alojamiento. Próximamente.'},
+ {id:'herreria',name:'Herrería',x:16,y:49,description:'Mejoras de armas y armaduras. Próximamente.'},
+ {id:'mercado',name:'Mercado',x:47,y:57,description:'Compra pociones con tus monedas de cobre.'},
+ {id:'enfermeria',name:'Enfermería',x:32,y:75,description:'Atención a personajes heridos. Próximamente.'},
+ {id:'puerto',name:'Puerto',x:82,y:80,description:'Comercio marítimo y expediciones. Próximamente.'}
+];
+let selectedCityLocation=null;
+function renderCityLocations(){
+ $('cityHotspots').innerHTML=CITY_LOCATIONS.map(loc=>'<button type="button" class="city-hotspot '+(selectedCityLocation===loc.id?'selected':'')+'" style="--cx:'+loc.x+'%;--cy:'+loc.y+'%" onclick="selectCityLocation(\''+loc.id+'\')" aria-pressed="'+(selectedCityLocation===loc.id)+'">'+loc.name+'</button>').join('');
+ const loc=CITY_LOCATIONS.find(x=>x.id===selectedCityLocation);
+ $('citySelectionTitle').textContent=loc?loc.name:'Elegí un establecimiento';
+ $('citySelectionDescription').textContent=loc?loc.description:'Seleccioná una ubicación del mapa para conocer sus servicios.';
+ $('cityEnter').disabled=!loc;
+}
+function selectCityLocation(id){if(!CITY_LOCATIONS.some(x=>x.id===id))return;selectedCityLocation=id;renderCityLocations();$('citySelectionTitle').scrollIntoView({behavior:'smooth',block:'nearest'});}
+function enterSelectedCityBuilding(){
+ const loc=CITY_LOCATIONS.find(x=>x.id===selectedCityLocation);if(!loc)return;
+ $('cityBuildingTitle').textContent=loc.name;$('cityBuildingDescription').textContent=loc.description;
+ $('cityBuilding').hidden=false;$('citySelection').hidden=true;$('cityBuildingServices').innerHTML='';
+ if(loc.id==='mercado')renderCityShop();
+ else $('cityBuildingServices').textContent='Este establecimiento todavía no ofrece servicios.';
+ $('cityBuilding').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeCityBuilding(){$('cityBuilding').hidden=true;$('citySelection').hidden=false;}
+function citySavedProfile(){const saved=readSlot(mapSlot);return saved?.profile||null;}
+function renderCityShop(){
+ const p=citySavedProfile();if(!p)return;
+ const stock=p.potionStock||{medium:0,large:0};
+ $('cityBuildingServices').innerHTML='<p>Saldo: <strong>'+Math.max(0,p.coins||0)+' monedas de cobre</strong></p><p>Inventario: '+(stock.medium||0)+' medianas · '+(stock.large||0)+' grandes</p><button onclick="buyCityPotion(\'medium\')">Comprar poción mediana · 20 cobres</button> <button onclick="buyCityPotion(\'large\')">Comprar poción grande · 35 cobres</button><p id="cityShopMessage" role="status"></p>';
+}
+function buyCityPotion(type){
+ if(type!=='medium'&&type!=='large')return;
+ const saved=readSlot(mapSlot);if(!saved)return;
+ const price=type==='medium'?20:35,p=saved.profile;
+ p.coins=Math.max(0,Number(p.coins)||0);
+ if(p.coins<price){$('cityShopMessage').textContent='No tenés suficientes monedas de cobre.';return;}
+ p.potionStock??={medium:0,large:0};p.potionStock[type]=(p.potionStock[type]||0)+1;p.coins-=price;
+ localStorage.setItem(slotKey(mapSlot),JSON.stringify({...saved,profile:p,updatedAt:Date.now()}));
+ renderCityShop();$('cityShopMessage').textContent='Compra realizada y guardada.';
+}
+
+function enterMapCity(){if(busy)return;const saved=readSlot(mapSlot);if(!saved)return;if(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked)return;$('levelMap').hidden=true;$('cityView').hidden=false;selectedCityLocation=null;$('cityBuilding').hidden=true;$('citySelection').hidden=false;renderCityLocations();window.scrollTo(0,0);}
 function backToCityMap(){$('cityView').hidden=true;$('levelMap').hidden=false;renderLevelMap();}
 function playMapLevel(){
  if(busy||selectedMapLevel===6)return;
