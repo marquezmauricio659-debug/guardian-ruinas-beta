@@ -1,7 +1,7 @@
-/* B15-013: respaldos portables, compatibles con B15-012. */
+/* B15-012: respaldos portables, independientes de B15-011. */
 (function(){
 'use strict';
-const FORMAT='guardian-ruinas-b15-013', LIMIT=2*1024*1024;
+const FORMAT='guardian-ruinas-b15-012', LIMIT=2*1024*1024;
 const byId=id=>document.getElementById(id);
 function status(msg){const el=byId('transferStatus');if(el)el.textContent=msg;}
 function validSlot(d){
@@ -23,7 +23,7 @@ function download(){
   const data={format:FORMAT,formatVersion:1,exportedAt:new Date().toISOString(),slot,data:saved};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='guardian-b15-013-espacio-'+slot+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  a.href=url;a.download='guardian-b15-012-espacio-'+slot+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
   status('Respaldo del espacio '+slot+' generado. Conservá el archivo JSON.');
  }catch(e){status('No se pudo descargar el respaldo: '+e.message)}
 }
@@ -32,7 +32,7 @@ async function upload(input){
  try{
   if(file.size>LIMIT)throw Error('El archivo supera el máximo de 2 MB.');
   const data=JSON.parse(await file.text());
-  if(![FORMAT,'guardian-ruinas-b15-012'].includes(data.format)||data.formatVersion!==1||!validSlot(data.data))throw Error('Archivo incompatible o estructura de partida inválida.');
+  if(data.format!==FORMAT||data.formatVersion!==1||!validSlot(data.data))throw Error('Archivo incompatible o estructura de partida inválida.');
   if(busy)throw Error('No se puede importar durante una acción de combate.');
   const slot=Number(byId('transferSlot').value);
   if(![1,2,3].includes(slot))throw Error('Espacio de destino inválido.');

@@ -59,45 +59,53 @@ function victoryToMap(){
  if(readSlot(id)?.replayBackup)restoreLevelReplay();
  openLevelMap(id);
 }
+function openPracticeMap(){if(busy)return;const id=4;let saved=readSlot(id);if(!saved){const oldSlot=activeSlot,oldProfile=profile,oldState=s;activeSlot=id;profile=defaultProfile('knight');profile.points=20;profile.practiceBudgetInitialized=true;encounter(1,false);activeSlot=oldSlot;profile=oldProfile;s=oldState;}saved=readSlot(id);if(saved&&!saved.profile.practiceBudgetInitialized){saved.profile.points=20;saved.profile.practiceBudgetInitialized=true;localStorage.setItem(slotKey(id),JSON.stringify(saved));}openLevelMap(id);}
+function restartPracticeLevel(){if(busy||activeSlot!==4)return;profile.potionStock={medium:2,large:1};encounter(levelStartOf(levelIdOf(s.encounter)),false);showGame();}
 function openLevelMap(id){
- if(busy||![1,2,3].includes(id))return;
+ if(busy||![1,2,3,4].includes(id))return;
  let saved=readSlot(id);if(!saved)return;
  const progress=levelProgressFor(saved);
  if(JSON.stringify(saved.levelProgress)!==JSON.stringify(progress)){saved={...saved,levelProgress:progress};localStorage.setItem(slotKey(id),JSON.stringify(saved));}
  mapSlot=id;
- selectedMapLevel=progress.unlocked.find(n=>!progress.completed.includes(n))||Math.max(...progress.unlocked);
+ selectedMapLevel=id===4?levelIdOf(saved.state.encounter):progress.unlocked.find(n=>!progress.completed.includes(n))||Math.max(...progress.unlocked);
  if($('modal').open)$('modal').close();
- $('mainMenu').hidden=true;$('appSurface').hidden=true;$('levelMap').hidden=false;renderLevelMap();window.scrollTo(0,0);
+ $('mainMenu').hidden=true;$('appSurface').hidden=true;$('cityView').hidden=true;$('levelMap').hidden=false;renderLevelMap();window.scrollTo(0,0);
 }
 function renderLevelMap(){
  const saved=readSlot(mapSlot);if(!saved)return;
  const progress=levelProgressFor(saved);
- $('mapSaveName').textContent='ESPACIO '+mapSlot+' · '+saved.label;
+ $('mapSaveName').textContent=mapSlot===4?'MODO PRUEBA · SIN LÍMITES':'ESPACIO '+mapSlot+' · '+saved.label;$('mapIntro').textContent=mapSlot===4?'Elegí cualquiera de los cinco niveles. Tenés 20 puntos iniciales para mejorar habilidades del equipo desde el botón Habilidades durante la prueba. Las mejoras se conservan al repetir niveles, sin alterar tus partidas.':'Un viaje entre ruinas, bosques y reinos olvidados.';
  $('levelNodes').innerHTML=LEVEL_CATALOG.map(level=>{
-  const completed=progress.completed.includes(level.id),unlocked=progress.unlocked.includes(level.id),selected=selectedMapLevel===level.id;
+  const completed=progress.completed.includes(level.id),unlocked=mapSlot===4||progress.unlocked.includes(level.id),selected=selectedMapLevel===level.id;
   const status=completed?'completed':!unlocked?'locked':'available';
   const label=completed?'Completado':unlocked?'Disponible':'Bloqueado';
   return '<div class="level-stop '+status+(selected?' selected':'')+'" style="--x:'+level.x+'%;--y:'+level.y+'%"><button data-level="'+level.id+'" '+(!unlocked?'disabled':'')+' onclick="selectMapLevel('+level.id+')" aria-label="Nivel '+level.id+': '+label+'"><strong>'+level.id+'</strong><span aria-hidden="true">'+(completed?'✓':!unlocked?'🔒':'◆')+'</span></button><span class="level-label">'+level.name+'<small>'+label+'</small></span></div>';
  }).join('');
- const level=LEVEL_CATALOG[selectedMapLevel-1];
+ const citySelected=selectedMapLevel===6;
+ const castle=$('castleEntry');castle.classList.toggle('selected',citySelected);castle.classList.toggle('locked',mapSlot!==4&&!progress.cityUnlocked);castle.setAttribute('aria-pressed',String(citySelected));
+ const level=LEVEL_CATALOG[citySelected?4:selectedMapLevel-1];
  const completed=progress.completed.includes(selectedMapLevel);
- $('mapAction').disabled=!progress.unlocked.includes(selectedMapLevel);
- $('mapAction').textContent=completed?'Repetir nivel '+selectedMapLevel:'Jugar nivel '+selectedMapLevel;
- $('mapDescription').textContent=level.description+(selectedMapLevel===5?' Las heridas, el maná y los personajes caídos persisten hasta terminar el nivel.':'');
+ $('mapAction').disabled=citySelected?(mapSlot!==4&&!progress.cityUnlocked):(mapSlot!==4&&!progress.unlocked.includes(selectedMapLevel));
+ $('mapAction').textContent=citySelected?'Entrar a la ciudad':mapSlot===4?'Probar nivel '+selectedMapLevel:completed?'Repetir nivel '+selectedMapLevel:'Jugar nivel '+selectedMapLevel;
+ $('mapDescription').textContent=citySelected?(mapSlot===4?'Entrada de prueba a la ciudad.':'La ciudad se desbloquea al superar el nivel 5.'):(level.description+(selectedMapLevel===5?' Las heridas, el maná y los personajes caídos persisten hasta terminar el nivel.':''));
  const victory=$('levelMap').querySelector('.map-details small');
- if(victory)victory.textContent=(progress.cityUnlocked?'CIUDAD DESBLOQUEADA · ':'')+'NIVEL '+selectedMapLevel+' · '+level.name.toUpperCase();
- $('restoreReplay').hidden=!saved.replayBackup;
+ if(victory)victory.textContent=citySelected?'CASTILLO · CIUDAD DEL REINO':(progress.cityUnlocked?'CIUDAD DESBLOQUEADA · ':'')+'NIVEL '+selectedMapLevel+' · '+level.name.toUpperCase();
+ $('restoreReplay').hidden=mapSlot===4||!saved.replayBackup;
 }
 function selectMapLevel(id){
  const saved=readSlot(mapSlot);
- if(!saved||!levelProgressFor(saved).unlocked.includes(id))return;
+ if(!saved||(mapSlot!==4&&!levelProgressFor(saved).unlocked.includes(id)))return;
  selectedMapLevel=id;renderLevelMap();
 }
+function selectMapCity(){if(busy)return;selectedMapLevel=6;renderLevelMap();const details=$('levelMap').querySelector('.map-details');if(details)details.scrollIntoView({behavior:'smooth',block:'center'});}
+function activateMapSelection(){if(selectedMapLevel===6){enterMapCity();return;}playMapLevel();}
+function enterMapCity(){if(busy)return;const saved=readSlot(mapSlot);if(!saved)return;if(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked)return;$('levelMap').hidden=true;$('cityView').hidden=false;window.scrollTo(0,0);}
+function backToCityMap(){$('cityView').hidden=true;$('levelMap').hidden=false;renderLevelMap();}
 function playMapLevel(){
- if(busy)return;
+ if(busy||selectedMapLevel===6)return;
  const saved=readSlot(mapSlot);if(!saved)return;
  const progress=levelProgressFor(saved),id=selectedMapLevel;
- if(!progress.unlocked.includes(id))return;
+ if(mapSlot===4){activeSlot=4;profile=structuredClone(saved.profile);profile.potionStock={medium:2,large:1};encounter(levelStartOf(id),false);$('levelMap').hidden=true;showGame();return;}if(!progress.unlocked.includes(id))return;
  /* Al cambiar de nivel, conservar una instantánea completa para que el guardado siga siendo recuperable. */
  if(progress.completed.includes(id)&&!saved.replayBackup){
   $('replayNotice').textContent='Se guardará una copia de tu partida actual antes de repetir este nivel. Podés recuperar la partida original desde el mapa.';
@@ -123,5 +131,5 @@ function restoreLevelReplay(){
 }
 function restoreReplayFromMap(){restoreLevelReplay();renderLevelMap()}
 function leaveLevelMap(){
- $('levelMap').hidden=true;$('mainMenu').hidden=false;$('appSurface').hidden=true;activeSlot=0;selectedSlot=0;menuHome();window.scrollTo(0,0);
+ $('cityView').hidden=true;$('levelMap').hidden=true;$('mainMenu').hidden=false;$('appSurface').hidden=true;activeSlot=0;selectedSlot=0;menuHome();window.scrollTo(0,0);
 }
