@@ -60,7 +60,7 @@ function victoryToMap(){
  openLevelMap(id);
 }
 function openPracticeMap(){if(busy)return;const id=4;let saved=readSlot(id);if(!saved){const oldSlot=activeSlot,oldProfile=profile,oldState=s;activeSlot=id;profile=defaultProfile('knight');profile.points=20;profile.practiceBudgetInitialized=true;encounter(1,false);activeSlot=oldSlot;profile=oldProfile;s=oldState;}saved=readSlot(id);if(saved&&!saved.profile.practiceBudgetInitialized){saved.profile.points=20;saved.profile.practiceBudgetInitialized=true;localStorage.setItem(slotKey(id),JSON.stringify(saved));}openLevelMap(id);}
-function restartPracticeLevel(){if(busy||activeSlot!==4)return;encounter(levelStartOf(levelIdOf(s.encounter)),false);showGame();}
+function restartPracticeLevel(){if(busy||activeSlot!==4)return;profile.potionStock={medium:2,large:1};encounter(levelStartOf(levelIdOf(s.encounter)),false);showGame();}
 function openLevelMap(id){
  if(busy||![1,2,3,4].includes(id))return;
  let saved=readSlot(id);if(!saved)return;
@@ -99,7 +99,7 @@ function playMapLevel(){
  if(busy)return;
  const saved=readSlot(mapSlot);if(!saved)return;
  const progress=levelProgressFor(saved),id=selectedMapLevel;
- if(mapSlot===4){activeSlot=4;profile=structuredClone(saved.profile);encounter(levelStartOf(id),false);$('levelMap').hidden=true;showGame();return;}if(!progress.unlocked.includes(id))return;
+ if(mapSlot===4){activeSlot=4;profile=structuredClone(saved.profile);profile.potionStock={medium:2,large:1};encounter(levelStartOf(id),false);$('levelMap').hidden=true;showGame();return;}if(!progress.unlocked.includes(id))return;
  /* Al cambiar de nivel, conservar una instantánea completa para que el guardado siga siendo recuperable. */
  if(progress.completed.includes(id)&&!saved.replayBackup){
   $('replayNotice').textContent='Se guardará una copia de tu partida actual antes de repetir este nivel. Podés recuperar la partida original desde el mapa.';
