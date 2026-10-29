@@ -25,7 +25,7 @@ const roster={wolf:{name:'Lobo de brasa',hp:80,armor:0,attack:14,speed:14,role:'
    target:0,started:false,party,fallen:previousFallen,
    dead:past?past.dead:[],runCoins:past?past.runCoins:0,kills:past?past.kills:0,
    guard:false,poison:aliveParty?.poison||0,over:false,won:false,log:[],
-   enemies:enemyKeys(n).map(key=>{let e={...roster[key]};e.max=Math.round(e.hp*(1+cycle*.11));e.hp=e.max;e.attack+=Math.floor(cycle/2);e.special+=e.role==='charge'?Math.floor(cycle/2):0;if(n===14&&key==='bear'){e.max=Math.round(e.max*.88);e.hp=e.max;}if(n===15&&key==='boss'){e.max=Math.round(e.max*.90*.85);e.hp=e.max;}return e})
+   enemies:enemyKeys(n).map(key=>{let e={...roster[key]};e.max=Math.round(e.hp*(1+cycle*.11));e.hp=e.max;e.attack+=Math.floor(cycle/2);e.special+=e.role==='charge'?Math.floor(cycle/2):0;if(n===14&&(key==='bear'||key==='salamander')){e.max=Math.round(e.max*(key==='bear'?.88:1)*.50);e.hp=e.max;e.wounded=true;e.name+=' · Herido';}if(n===15&&key==='boss'){e.max=Math.round(e.max*.90*.85);e.hp=e.max;}return e})
  };
  add((siege?'Asedio final: sin recuperación automática. ':'Vida, maná y hierbas renovados; las pociones NO se reponen. ')+
  'Nivel '+levelIdOf(n)+' · Encuentro '+levelRoundOf(n)+': '+
