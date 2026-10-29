@@ -97,7 +97,7 @@ function selectMapLevel(id){
  if(!saved||(mapSlot!==4&&!levelProgressFor(saved).unlocked.includes(id)))return;
  selectedMapLevel=id;renderLevelMap();
 }
-function selectMapCity(){if(busy)return;selectedMapLevel=6;renderLevelMap();}
+function selectMapCity(){if(busy)return;selectedMapLevel=6;renderLevelMap();const details=$('levelMap').querySelector('.map-details');if(details)details.scrollIntoView({behavior:'smooth',block:'center'});}
 function activateMapSelection(){if(selectedMapLevel===6){enterMapCity();return;}playMapLevel();}
 function enterMapCity(){if(busy)return;const saved=readSlot(mapSlot);if(!saved)return;if(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked)return;$('levelMap').hidden=true;$('cityView').hidden=false;window.scrollTo(0,0);}
 function backToCityMap(){$('cityView').hidden=true;$('levelMap').hidden=false;renderLevelMap();}
