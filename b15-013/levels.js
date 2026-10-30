@@ -128,21 +128,45 @@ function enterSelectedCityBuilding(){
  $('cityBuilding').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function closeCityBuilding(){$('cityBuilding').hidden=true;$('citySelection').hidden=false;}
+// B15-013: una sola unidad contable en cobre. La representación 10:1 no altera guardados.
+function copperBalance(value){
+ const n=Number(value);
+ return Number.isSafeInteger(n)&&n>0?n:0;
+}
+function formatKingdomCoins(value){
+ let balance=copperBalance(value);
+ const diamond=Math.floor(balance/1000); balance%=1000;
+ const gold=Math.floor(balance/100); balance%=100;
+ const silver=Math.floor(balance/10); const copper=balance%10;
+ return diamond+' diamantes · '+gold+' oros · '+silver+' platas · '+copper+' cobres';
+}
 function citySavedProfile(){const saved=readSlot(mapSlot);return saved?.profile||null;}
-function renderCityShop(){
- const p=citySavedProfile();if(!p)return;
+function renderCityShop(message=''){
+ const p=citySavedProfile();
+ if(!p){$('cityBuildingServices').textContent='No se encontró una partida para operar el Mercado.';return;}
  const stock=p.potionStock||{medium:0,large:0};
- $('cityBuildingServices').innerHTML='<p>Saldo: <strong>'+Math.max(0,p.coins||0)+' monedas de cobre</strong></p><p>Inventario: '+(stock.medium||0)+' medianas · '+(stock.large||0)+' grandes</p><button onclick="buyCityPotion(\'medium\')">Comprar poción mediana · 20 cobres</button> <button onclick="buyCityPotion(\'large\')">Comprar poción grande · 35 cobres</button><p id="cityShopMessage" role="status"></p>';
+ const balance=copperBalance(p.coins);
+ $('cityBuildingServices').innerHTML='<p>Saldo: <strong>'+formatKingdomCoins(balance)+'</strong> ('+balance+' cobres equivalentes)</p><p>Inventario: '+(Number(stock.medium)||0)+' medianas · '+(Number(stock.large)||0)+' grandes</p><button type="button" onclick="buyCityPotion(\'medium\')">Comprar poción mediana · 2 platas</button> <button type="button" onclick="buyCityPotion(\'large\')">Comprar poción grande · 3 platas y 5 cobres</button><p id="cityShopMessage" role="status"></p>';
+ $('cityShopMessage').textContent=message;
 }
 function buyCityPotion(type){
  if(type!=='medium'&&type!=='large')return;
- const saved=readSlot(mapSlot);if(!saved)return;
+ const saved=readSlot(mapSlot);
+ if(!saved||!saved.profile){$('cityShopMessage').textContent='No se encontró una partida válida.';return;}
  const price=type==='medium'?20:35,p=saved.profile;
- p.coins=Math.max(0,Number(p.coins)||0);
- if(p.coins<price){$('cityShopMessage').textContent='No tenés suficientes monedas de cobre.';return;}
- p.potionStock??={medium:0,large:0};p.potionStock[type]=(p.potionStock[type]||0)+1;p.coins-=price;
- localStorage.setItem(slotKey(mapSlot),JSON.stringify({...saved,profile:p,updatedAt:Date.now()}));
- renderCityShop();$('cityShopMessage').textContent='Compra realizada y guardada.';
+ const balance=copperBalance(p.coins);
+ if(balance<price){$('cityShopMessage').textContent='No tenés suficientes monedas.';return;}
+ const stock=p.potionStock||{medium:0,large:0};
+ const count=Number(stock[type])||0;
+ if(!Number.isSafeInteger(count)||count<0||count>=Number.MAX_SAFE_INTEGER){$('cityShopMessage').textContent='Inventario inválido; no se realizó la compra.';return;}
+ p.potionStock={...stock,[type]:count+1};
+ p.coins=balance-price;
+ try{
+  localStorage.setItem(slotKey(mapSlot),JSON.stringify({...saved,profile:p,updatedAt:Date.now()}));
+  renderCityShop('Compra realizada y guardada.');
+ }catch(error){
+  $('cityShopMessage').textContent='No se pudo guardar la compra; comprobá el almacenamiento de este dispositivo.';
+ }
 }
 
 function enterMapCity(){if(busy)return;const saved=readSlot(mapSlot);if(!saved)return;if(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked)return;$('levelMap').hidden=true;$('cityView').hidden=false;selectedCityLocation=null;$('cityBuilding').hidden=true;$('citySelection').hidden=false;renderCityLocations();window.scrollTo(0,0);}
