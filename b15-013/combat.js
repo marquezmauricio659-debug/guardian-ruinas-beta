@@ -61,7 +61,7 @@ function renderMarket(){
  $('buyPotion').disabled=true;
  $('buyPotion').textContent='Compras disponibles en la ciudad';
  const unlocked=levelProgressFor(readSlot(activeSlot)||{}).cityUnlocked;
- $('shopStatus').textContent=(unlocked?'La ciudad está desbloqueada, pero su mercado todavía no está implementado.':'Superá el nivel 5 para desbloquear la ciudad y su mercado.')+(profile.healthPotions?' '+profile.healthPotions+' pociones adquiridas en versiones previas siguen guardadas para el futuro mercado.':'');
+ $('shopStatus').textContent=(unlocked?'Las compras están disponibles en el Mercado de la Ciudad de Varkhul.':'Superá el nivel 5 para desbloquear la ciudad y su mercado.')+(profile.healthPotions?' '+profile.healthPotions+' pociones adquiridas en versiones previas siguen guardadas para el futuro mercado.':'');
  $('combatTab').disabled=busy;$('marketTab').disabled=busy;
 }
 function buyHealthPotion(){
