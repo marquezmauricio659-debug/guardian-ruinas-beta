@@ -102,17 +102,17 @@ function activateMapSelection(){if(selectedMapLevel===6){enterMapCity();return;}
 
 /* B15-013: mapa de ciudad y servicios compartidos con la campaña. */
 const CITY_LOCATIONS=[
- {id:'castillo',name:'Castillo',x:72,y:9,description:'Sede del gobierno. Las misiones principales llegarán más adelante.'},
- {id:'gremio',name:'Gremio',x:88,y:25,description:'Encargos y recompensas. Próximamente.'},
- {id:'posada',name:'Posada',x:55,y:33,description:'Descanso y alojamiento. Próximamente.'},
- {id:'herreria',name:'Herrería',x:83,y:50,description:'Mejoras de armas y armaduras. Próximamente.'},
- {id:'mercado',name:'Mercado',x:45,y:43,description:'Compra pociones con tus monedas de cobre.'},
- {id:'enfermeria',name:'Enfermería',x:72,y:65,description:'Atención a personajes heridos. Próximamente.'},
- {id:'puerto',name:'Puerto',x:19,y:50,description:'Comercio marítimo y expediciones. Próximamente.'}
+ {id:'castillo',name:'Castillo',x:73,y:9,w:12.0,h:6.4,description:'Sede del gobierno. Las misiones principales llegarán más adelante.'},
+ {id:'gremio',name:'Gremio',x:88,y:26,w:12.3,h:6.3,description:'Encargos y recompensas. Próximamente.'},
+ {id:'posada',name:'Posada',x:55,y:34,w:12.4,h:6.1,description:'Descanso y alojamiento. Próximamente.'},
+ {id:'herreria',name:'Herrería',x:83,y:51,w:13.1,h:6.1,description:'Mejoras de armas y armaduras. Próximamente.'},
+ {id:'mercado',name:'Mercado',x:45,y:43,w:12.3,h:6.1,description:'Compra pociones con tus monedas de cobre.'},
+ {id:'enfermeria',name:'Enfermería',x:73,y:65,w:13.6,h:6.1,description:'Atención a personajes heridos. Próximamente.'},
+ {id:'puerto',name:'Puerto',x:19,y:51,w:12.0,h:6.1,description:'Comercio marítimo y expediciones. Próximamente.'}
 ];
 let selectedCityLocation=null;
 function renderCityLocations(){
- $('cityHotspots').innerHTML=CITY_LOCATIONS.map(loc=>'<button type="button" class="city-hotspot '+(selectedCityLocation===loc.id?'selected':'')+'" style="--cx:'+loc.x+'%;--cy:'+loc.y+'%" onclick="openCityLocation(\''+loc.id+'\')" aria-pressed="'+(selectedCityLocation===loc.id)+'" aria-label="Seleccionar '+loc.name+'" title="Seleccionar '+loc.name+'"><span class="sr-only">'+loc.name+'</span></button>').join('');
+ $('cityHotspots').innerHTML=CITY_LOCATIONS.map(loc=>'<button type="button" class="city-hotspot '+(selectedCityLocation===loc.id?'selected':'')+'" style="--cx:'+loc.x+'%;--cy:'+loc.y+'%;--cw:'+loc.w+'%;--ch:'+loc.h+'%" onclick="openCityLocation(\''+loc.id+'\')" aria-pressed="'+(selectedCityLocation===loc.id)+'" aria-label="Seleccionar '+loc.name+'" title="Seleccionar '+loc.name+'"><span class="sr-only">'+loc.name+'</span></button>').join('');
  const loc=CITY_LOCATIONS.find(x=>x.id===selectedCityLocation);
  $('citySelectionTitle').textContent=loc?loc.name:'Elegí un establecimiento';
  $('citySelectionDescription').textContent=loc?loc.description:'Seleccioná una ubicación del mapa para conocer sus servicios.';
