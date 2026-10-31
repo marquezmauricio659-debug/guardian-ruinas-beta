@@ -173,6 +173,11 @@ function buyCityPotion(type){
  p.coins=balance-price;
  try{
   localStorage.setItem(slotKey(mapSlot),JSON.stringify({...saved,profile:p,updatedAt:Date.now()}));
+  // Sincronizar el perfil activo: persist() no debe sobrescribir una compra ya guardada.
+  if(typeof activeSlot!=='undefined'&&activeSlot===mapSlot&&typeof profile!=='undefined'){
+   profile.coins=p.coins;
+   profile.potionStock={...p.potionStock};
+  }
   renderCityShop('Compra realizada y guardada.');
  }catch(error){
   $('cityShopMessage').textContent='No se pudo guardar la compra; comprobá el almacenamiento de este dispositivo.';
