@@ -111,6 +111,17 @@ const CITY_LOCATIONS=[
  {id:'puerto',name:'Puerto',x:18.75,y:50.909,w:11.719,h:5.682,description:'Comercio marítimo y expediciones. Próximamente.'}
 ];
 let selectedCityLocation=null;
+let cityFramePreviewEnabled=false;
+function toggleCityFramePreview(){
+ cityFramePreviewEnabled=!cityFramePreviewEnabled;
+ const scene=document.querySelector('#cityView .city-scene');
+ const toggle=$('cityShowAllFrames');
+ if(scene)scene.classList.toggle('show-all-frames',cityFramePreviewEnabled);
+ if(toggle){
+  toggle.setAttribute('aria-pressed',String(cityFramePreviewEnabled));
+  toggle.textContent=cityFramePreviewEnabled?'Ocultar los 7 recuadros (prueba)':'Mostrar los 7 recuadros (prueba)';
+ }
+}
 function renderCityLocations(){
  $('cityHotspots').innerHTML=CITY_LOCATIONS.map(loc=>'<button type="button" class="city-hotspot '+(selectedCityLocation===loc.id?'selected':'')+'" style="--cx:'+loc.x+'%;--cy:'+loc.y+'%;--cw:'+loc.w+'%;--ch:'+loc.h+'%" onclick="openCityLocation(\''+loc.id+'\')" aria-pressed="'+(selectedCityLocation===loc.id)+'" aria-label="Seleccionar '+loc.name+'" title="Seleccionar '+loc.name+'"><span class="sr-only">'+loc.name+'</span></button>').join('');
  const loc=CITY_LOCATIONS.find(x=>x.id===selectedCityLocation);
