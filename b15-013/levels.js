@@ -103,12 +103,12 @@ function activateMapSelection(){if(selectedMapLevel===6){enterMapCity();return;}
 /* B15-013: mapa de ciudad y servicios compartidos con la campaña. */
 const CITY_LOCATIONS=[
  {id:'castillo',name:'Castillo',x:71.615,y:8.864,w:11.849,h:5.909,description:'Sede del gobierno. Las misiones principales llegarán más adelante.'},
- {id:'gremio',name:'Gremio',x:87.598,y:25.739,w:11.914,h:6.25,description:'Encargos y recompensas. Próximamente.'},
- {id:'posada',name:'Posada',x:54.753,y:33.58,w:11.979,h:5.795,description:'Descanso y alojamiento. Próximamente.'},
- {id:'herreria',name:'Herrería',x:82.585,y:50.852,w:13.086,h:5.795,description:'Mejoras de armas y armaduras. Próximamente.'},
- {id:'mercado',name:'Mercado',x:45.247,y:42.898,w:11.849,h:5.568,description:'Compra pociones con tus monedas de cobre.'},
- {id:'enfermeria',name:'Enfermería',x:72.233,y:65.455,w:14.388,h:5.909,description:'Atención a personajes heridos. Próximamente.'},
- {id:'puerto',name:'Puerto',x:18.75,y:50.909,w:11.719,h:5.682,description:'Comercio marítimo y expediciones. Próximamente.'}
+ {id:'gremio',name:'Gremio',x:85.6,y:25.739,w:11.914,h:6.25,description:'Encargos y recompensas. Próximamente.'},
+ {id:'posada',name:'Posada',x:53.6,y:33.58,w:11.979,h:5.795,description:'Descanso y alojamiento. Próximamente.'},
+ {id:'herreria',name:'Herrería',x:80.63,y:50.852,w:13.086,h:5.795,description:'Mejoras de armas y armaduras. Próximamente.'},
+ {id:'mercado',name:'Mercado',x:44.36,y:42.898,w:11.849,h:5.568,description:'Compra pociones con tus monedas de cobre.'},
+ {id:'enfermeria',name:'Enfermería',x:70.5,y:65.455,w:14.388,h:5.909,description:'Atención a personajes heridos. Próximamente.'},
+ {id:'puerto',name:'Puerto',x:18.41,y:50.909,w:11.719,h:5.682,description:'Comercio marítimo y expediciones. Próximamente.'}
 ];
 let selectedCityLocation=null;
 let cityFramePreviewEnabled=false;
