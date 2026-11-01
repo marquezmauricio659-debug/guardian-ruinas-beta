@@ -89,8 +89,8 @@ function renderLevelMap(){
  const castle=$('castleEntry');castle.classList.toggle('selected',citySelected);castle.classList.toggle('locked',mapSlot!==4&&!progress.cityUnlocked);castle.setAttribute('aria-pressed',String(citySelected));
  const level=LEVEL_CATALOG[citySelected||huntSelected?4:selectedMapLevel-1];
  const completed=progress.completed.includes(selectedMapLevel);
- $('mapAction').disabled=huntSelected|| (citySelected?(mapSlot!==4&&!progress.cityUnlocked):(mapSlot!==4&&!progress.unlocked.includes(selectedMapLevel)));
- $('mapAction').textContent=huntSelected?'Combate de caza pendiente':citySelected?'Entrar a la ciudad':mapSlot===4?'Probar nivel '+selectedMapLevel:completed?'Repetir nivel '+selectedMapLevel:'Jugar nivel '+selectedMapLevel;
+ $('mapAction').disabled=(citySelected?(mapSlot!==4&&!progress.cityUnlocked):(huntSelected?(mapSlot!==4&&!progress.cityUnlocked):(mapSlot!==4&&!progress.unlocked.includes(selectedMapLevel))));
+ $('mapAction').textContent=huntSelected?'Entrar a Caza occidental':citySelected?'Entrar a la ciudad':mapSlot===4?'Probar nivel '+selectedMapLevel:completed?'Repetir nivel '+selectedMapLevel:'Jugar nivel '+selectedMapLevel;
  $('mapDescription').textContent=huntSelected?'Zona opcional del bosque occidental. El acceso al combate se añadirá después de validar este marcador.':citySelected?(mapSlot===4?'Entrada de prueba a la ciudad.':'La ciudad se desbloquea al superar el nivel 5.'):(level.description+(selectedMapLevel===5?' Las heridas, el maná y los personajes caídos persisten hasta terminar el nivel.':''));
  const victory=$('levelMap').querySelector('.map-details small');
  if(victory)victory.textContent=huntSelected?'ZONA DE CAZA · ACCESO EN PREPARACIÓN':citySelected?'CASTILLO · CIUDAD DEL REINO':(progress.cityUnlocked?'CIUDAD DESBLOQUEADA · ':'')+'NIVEL '+selectedMapLevel+' · '+level.name.toUpperCase();
@@ -103,7 +103,7 @@ function selectMapLevel(id){
 }
 function selectMapHunt(){if(busy)return;const saved=readSlot(mapSlot);if(!saved||(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked))return;selectedMapLevel=7;renderLevelMap();const details=$('levelMap').querySelector('.map-details');if(details)details.scrollIntoView({behavior:'smooth',block:'center'});}
 function selectMapCity(){if(busy)return;selectedMapLevel=6;renderLevelMap();const details=$('levelMap').querySelector('.map-details');if(details)details.scrollIntoView({behavior:'smooth',block:'center'});}
-function activateMapSelection(){if(selectedMapLevel===7)return;if(selectedMapLevel===6){enterMapCity();return;}playMapLevel();}
+function activateMapSelection(){if(selectedMapLevel===7){window.__startHuntCombatTest?.();return;}if(selectedMapLevel===6){enterMapCity();return;}playMapLevel();}
 
 /* B15-013: mapa de ciudad y servicios compartidos con la campaña. */
 const CITY_LOCATIONS=[
