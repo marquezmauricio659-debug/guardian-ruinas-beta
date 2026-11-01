@@ -155,6 +155,17 @@ function enterSelectedCityBuilding(){
 }
 function closeCityBuilding(){$('cityBuilding').hidden=true;$('citySelection').hidden=false;}
 function citySavedProfile(){const saved=readSlot(mapSlot);return saved?.profile||null;}
+function copperBalance(value){
+ const n=Number(value);
+ return Number.isSafeInteger(n)&&n>0?n:0;
+}
+function formatKingdomCoins(value){
+ let balance=copperBalance(value);
+ const diamond=Math.floor(balance/1000); balance%=1000;
+ const gold=Math.floor(balance/100); balance%=100;
+ const silver=Math.floor(balance/10); const copper=balance%10;
+ return diamond+' '+(diamond===1?'diamante':'diamantes')+' · '+gold+' '+(gold===1?'oro':'oros')+' · '+silver+' '+(silver===1?'plata':'platas')+' · '+copper+' '+(copper===1?'cobre':'cobres');
+}
 function renderCityShop(message=''){
  const p=citySavedProfile();
  if(!p){$('cityBuildingServices').textContent='No se encontró una partida para operar el Mercado.';return;}
