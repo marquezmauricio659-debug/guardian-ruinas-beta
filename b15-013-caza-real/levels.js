@@ -107,23 +107,44 @@ function activateMapSelection(){if(selectedMapLevel===7){window.__startHuntComba
 
 /* B15-013: mapa de ciudad y servicios compartidos con la campaña. */
 const CITY_LOCATIONS=[
- {id:'castillo',name:'Castillo',x:49,y:11,description:'Sede del gobierno. Las misiones principales llegarán más adelante.'},
- {id:'gremio',name:'Gremio',x:16,y:27,description:'Encargos y recompensas. Próximamente.'},
- {id:'posada',name:'Posada',x:70,y:31,description:'Descanso y alojamiento. Próximamente.'},
- {id:'herreria',name:'Herrería',x:16,y:49,description:'Mejoras de armas y armaduras. Próximamente.'},
- {id:'mercado',name:'Mercado',x:47,y:57,description:'Compra pociones con tus monedas de cobre.'},
- {id:'enfermeria',name:'Enfermería',x:32,y:75,description:'Atención a personajes heridos. Próximamente.'},
- {id:'puerto',name:'Puerto',x:82,y:80,description:'Comercio marítimo y expediciones. Próximamente.'}
+ {id:'castillo',name:'Castillo',x:70.5,y:8.864,w:11.849,h:5.909,description:'Sede del gobierno. Las misiones principales llegarán más adelante.'},
+ {id:'gremio',name:'Gremio',x:85.6,y:25.739,w:11.914,h:6.25,description:'Encargos y recompensas. Próximamente.'},
+ {id:'posada',name:'Posada',x:53.6,y:33.58,w:11.979,h:5.795,description:'Descanso y alojamiento. Próximamente.'},
+ {id:'herreria',name:'Herrería',x:80.63,y:50.852,w:13.086,h:5.795,description:'Mejoras de armas y armaduras. Próximamente.'},
+ {id:'mercado',name:'Mercado',x:44.36,y:42.898,w:11.849,h:5.568,description:'Compra pociones con tus monedas de cobre.'},
+ {id:'enfermeria',name:'Enfermería',x:70.5,y:65.455,w:14.388,h:5.909,description:'Atención a personajes heridos. Próximamente.'},
+ {id:'puerto',name:'Puerto',x:18.41,y:50.909,w:11.719,h:5.682,description:'Comercio marítimo y expediciones. Próximamente.'}
 ];
 let selectedCityLocation=null;
+let cityFramePreviewEnabled=false;
+function toggleCityFramePreview(){
+ cityFramePreviewEnabled=!cityFramePreviewEnabled;
+ const scene=document.querySelector('#cityView .city-scene');
+ const toggle=$('cityShowAllFrames');
+ if(scene)scene.classList.toggle('show-all-frames',cityFramePreviewEnabled);
+ if(toggle){
+  toggle.setAttribute('aria-pressed',String(cityFramePreviewEnabled));
+  toggle.textContent=cityFramePreviewEnabled?'Ocultar los 7 recuadros (prueba)':'Mostrar los 7 recuadros (prueba)';
+ }
+}
 function renderCityLocations(){
- $('cityHotspots').innerHTML=CITY_LOCATIONS.map(loc=>'<button type="button" class="city-hotspot '+(selectedCityLocation===loc.id?'selected':'')+'" style="--cx:'+loc.x+'%;--cy:'+loc.y+'%" onclick="selectCityLocation(\''+loc.id+'\')" aria-pressed="'+(selectedCityLocation===loc.id)+'">'+loc.name+'</button>').join('');
+ $('cityHotspots').innerHTML=CITY_LOCATIONS.map(loc=>'<button type="button" class="city-hotspot '+(selectedCityLocation===loc.id?'selected':'')+'" style="--cx:'+loc.x+'%;--cy:'+loc.y+'%;--cw:'+loc.w+'%;--ch:'+loc.h+'%" onclick="openCityLocation(\''+loc.id+'\')" aria-pressed="'+(selectedCityLocation===loc.id)+'" aria-label="Seleccionar '+loc.name+'" title="Seleccionar '+loc.name+'"><span class="sr-only">'+loc.name+'</span></button>').join('');
  const loc=CITY_LOCATIONS.find(x=>x.id===selectedCityLocation);
  $('citySelectionTitle').textContent=loc?loc.name:'Elegí un establecimiento';
  $('citySelectionDescription').textContent=loc?loc.description:'Seleccioná una ubicación del mapa para conocer sus servicios.';
  $('cityEnter').disabled=!loc;
 }
 function selectCityLocation(id){if(!CITY_LOCATIONS.some(x=>x.id===id))return;selectedCityLocation=id;renderCityLocations();$('citySelectionTitle').scrollIntoView({behavior:'smooth',block:'nearest'});}
+function openCityLocation(id){
+ if(!CITY_LOCATIONS.some(loc=>loc.id===id))return;
+ selectedCityLocation=id;
+ renderCityLocations();
+ enterSelectedCityBuilding();
+}
+function renderCityAccessList(){
+ const area=$('cityAccessList');if(!area)return;
+ area.innerHTML=CITY_LOCATIONS.map(loc=>'<button type="button" onclick="openCityLocation(\''+loc.id+'\')" aria-label="Entrar a '+loc.name+'">'+loc.name+'</button>').join('');
+}
 function enterSelectedCityBuilding(){
  const loc=CITY_LOCATIONS.find(x=>x.id===selectedCityLocation);if(!loc)return;
  $('cityBuildingTitle').textContent=loc.name;$('cityBuildingDescription').textContent=loc.description;
@@ -150,7 +171,7 @@ function buyCityPotion(type){
  renderCityShop();$('cityShopMessage').textContent='Compra realizada y guardada.';
 }
 
-function enterMapCity(){if(busy)return;const saved=readSlot(mapSlot);if(!saved)return;if(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked)return;$('levelMap').hidden=true;$('cityView').hidden=false;selectedCityLocation=null;$('cityBuilding').hidden=true;$('citySelection').hidden=false;renderCityLocations();window.scrollTo(0,0);}
+function enterMapCity(){if(busy)return;const saved=readSlot(mapSlot);if(!saved)return;if(mapSlot!==4&&!levelProgressFor(saved).cityUnlocked)return;$('levelMap').hidden=true;$('cityView').hidden=false;selectedCityLocation=null;$('cityBuilding').hidden=true;$('citySelection').hidden=false;renderCityLocations();renderCityAccessList();window.scrollTo(0,0);}
 function backToCityMap(){$('cityView').hidden=true;$('levelMap').hidden=false;renderLevelMap();}
 function playMapLevel(){
  if(busy||selectedMapLevel===6)return;
