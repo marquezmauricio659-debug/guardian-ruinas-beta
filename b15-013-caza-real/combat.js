@@ -104,7 +104,9 @@ window.__startHuntCombatTest=function(){
  if(!s)return false;
  const heroState={hp:s.hp,mp:s.mp,poison:s.poison||0};
  const selected=profile.classId;
+ activeSlot=0; // evita escribir la partida al construir el encuentro
  encounter(1,false);
+ activeSlot=mapSlot; // habilita ventanas de habilidades y equipo
  s.huntTest=true;
  s.enemies=['wolf','fox','lynx'].map(key=>({...roster[key],max:roster[key].hp,hp:roster[key].hp}));
  s.hp=heroState.hp;s.mp=heroState.mp;s.poison=heroState.poison;
