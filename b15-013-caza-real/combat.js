@@ -101,7 +101,7 @@ function slotKey(i){return 'ruinas-b15-013-real-caza-test-v1-'+i}function readSl
  const dlg=$('huntLootDialog');$('huntLootTitle').textContent=names[kind]||'Caza occidental';
  $('huntLootMessage').textContent=kind==='defeat'?'No se obtienen materiales por derrota.':'Materiales obtenidos durante la expedición. Esta versión solo los muestra; todavía no los guarda en el inventario.';
  const cards=Object.entries(loot).filter(([k,n])=>HUNT_LOOT[k]&&n>0);
- $('huntLootGrid').innerHTML=cards.length?cards.map(([k,n])=>'<div class="hunt-loot-card"><img src="../b15-013-caza-real/assets/botin/'+encodeURIComponent(HUNT_LOOT[k].img)+'" alt="'+HUNT_LOOT[k].name+'"><strong>'+HUNT_LOOT[k].name+'</strong><span>×'+n+'</span></div>').join(''):'<p>No se obtuvieron materiales.</p>';
+ $('huntLootGrid').innerHTML=cards.length?cards.map(([k,n])=>'<div class="hunt-loot-card"><img src="../b15-013-caza-real/'+encodeURIComponent(HUNT_LOOT[k].img)+'" alt="'+HUNT_LOOT[k].name+'"><strong>'+HUNT_LOOT[k].name+'</strong><span>×'+n+'</span></div>').join(''):'<p>No se obtuvieron materiales.</p>';
  if($('modal').open)$('modal').close();dlg.showModal();
 }
 window.closeHuntLoot=function(){const d=$('huntLootDialog');if(d.open)d.close();const id=mapSlot;activeSlot=0;s=null;profile=defaultProfile('knight');openLevelMap(id)};
