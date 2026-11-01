@@ -98,7 +98,7 @@ window.__startHuntCombatTest=function(){
  if(busy||![1,2,3,4].includes(mapSlot))return false;
  const saved=readSlot(mapSlot);
  if(!saved||!(mapSlot===4||levelProgressFor(saved).cityUnlocked))return false;
- activeSlot=0;
+ activeSlot=mapSlot;
  profile=structuredClone(saved.profile);
  s=structuredClone(saved.state);
  if(!s)return false;
