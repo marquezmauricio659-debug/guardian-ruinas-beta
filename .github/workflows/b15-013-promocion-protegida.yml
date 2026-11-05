@@ -1,0 +1,119 @@
+name: B15-013 · Validar candidata y proteger publicación
+
+on:
+  push:
+    branches: [gh-pages]
+    paths:
+      - '.github/workflows/b15-013-promocion-protegida.yml'
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: 'SHA completo actual de candidata/B15-013'
+        required: true
+        type: string
+      published_sha:
+        description: 'SHA completo actual de gh-pages antes de publicar'
+        required: true
+        type: string
+      confirmation:
+        description: 'Escribir PUBLICAR-CAZA-B15-013 para confirmar'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: b15-013-promocion-gh-pages
+  cancel-in-progress: false
+
+jobs:
+  verificar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      candidate_sha: ${{ steps.guard.outputs.candidate_sha }}
+      public_sha: ${{ steps.guard.outputs.public_sha }}
+      verified_sha: ${{ steps.guard.outputs.verified_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Verificar candidata contra ejecución aprobada
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_CANDIDATE: ${{ inputs.candidate_sha }}
+          INPUT_PUBLIC: ${{ inputs.published_sha }}
+          INPUT_CONFIRMATION: ${{ inputs.confirmation }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "gh-pages"
+          git fetch origin '+refs/heads/candidata/B15-013:refs/remotes/origin/candidata/B15-013'
+          CANDIDATE=$(git rev-parse refs/remotes/origin/candidata/B15-013)
+          PUBLISHED=$(git rev-parse HEAD)
+          echo "candidate_sha=$CANDIDATE" >> "$GITHUB_OUTPUT"
+          echo "public_sha=$PUBLISHED" >> "$GITHUB_OUTPUT"
+          RUN=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/b15-013-caza-regresion.yml/runs?branch=candidata%2FB15-013&per_page=20" \
+            --jq '[.workflow_runs[] | select(.event=="push")][0] | [.id,.status,.conclusion,.head_sha] | @tsv')
+          read -r RUN_ID STATUS CONCLUSION VERIFIED <<< "$RUN"
+          test -n "${VERIFIED:-}"
+          test "$STATUS" = "completed"
+          test "$CONCLUSION" = "success"
+          git merge-base --is-ancestor "$VERIFIED" "$CANDIDATE"
+          git diff --quiet "$VERIFIED" "$CANDIDATE" -- \
+            b15-013-caza-real/ b15-013/ tests/B15_013_caza_regresion.cjs \
+            .github/workflows/b15-013-caza-regresion.yml
+          echo "verified_sha=$VERIFIED" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Validación de candidata B15-013"
+            echo "- Última ejecución de prueba: $RUN_ID — $CONCLUSION"
+            echo "- Código aprobado: \`$VERIFIED\`"
+            echo "- Punta candidata: \`$CANDIDATE\`"
+            echo "- Publicación actual: \`$PUBLISHED\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            test "$INPUT_CONFIRMATION" = "PUBLICAR-CAZA-B15-013"
+            test "$INPUT_CANDIDATE" = "$CANDIDATE"
+            test "$INPUT_PUBLIC" = "$PUBLISHED"
+          fi
+  promocionar:
+    if: github.event_name == 'workflow_dispatch'
+    needs: verificar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: b15-013-publicacion
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Respaldar publicación y transferir únicamente cacería
+        env:
+          CANDIDATE: ${{ needs.verificar.outputs.candidate_sha }}
+          EXPECTED_PUBLIC: ${{ needs.verificar.outputs.public_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages candidata/B15-013
+          test "$(git rev-parse origin/gh-pages)" = "$EXPECTED_PUBLIC"
+          test "$(git rev-parse origin/candidata/B15-013)" = "$CANDIDATE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BACKUP="respaldo/b15-013-caza-$GITHUB_RUN_ID"
+          git tag -a "$BACKUP" "$EXPECTED_PUBLIC" -m "Version anterior a promocion B15-013 caza"
+          git push origin "refs/tags/$BACKUP"
+          git checkout "$CANDIDATE" -- b15-013-caza-real/
+          git add -- b15-013-caza-real/
+          if git diff --cached --quiet; then
+            echo "La candidata es idéntica a lo publicado: sin cambios."
+          else
+            git commit -m "release(caza): candidata aprobada $CANDIDATE (respaldo $BACKUP)"
+            git push origin HEAD:gh-pages
+          fi
+          echo "Respaldo creado: $BACKUP" >> "$GITHUB_STEP_SUMMARY"
+          echo "Solo se promovió b15-013-caza-real/. B15-013 estable permanece intacta." >> "$GITHUB_STEP_SUMMARY"
