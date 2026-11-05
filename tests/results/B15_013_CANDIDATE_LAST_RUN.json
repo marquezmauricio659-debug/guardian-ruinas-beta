@@ -1,0 +1,163 @@
+{
+  "run": "42031049953",
+  "sourceCommit": "3b9e090fd27e1df56b257645c8aaa497ce56b70d",
+  "checkedAt": "2026-11-05T12:55:53.579Z",
+  "devices": {
+    "desktop": {
+      "date": "2026-11-05T12:55:44.241Z",
+      "device": "desktop",
+      "url": "http://127.0.0.1:8765/guardian-ruinas-beta/b15-013-caza-real/",
+      "checks": [
+        {
+          "name": "Página experimental y scripts cargan",
+          "status": "PASS"
+        },
+        {
+          "name": "Mapa de práctica abre sin tocar partidas reales",
+          "status": "PASS"
+        },
+        {
+          "name": "Ciudad usa imagen definitiva, con 7 recuadros y acceso directo",
+          "status": "PASS"
+        },
+        {
+          "name": "7 recuadros clicables aun con marcos visibles",
+          "status": "PASS"
+        },
+        {
+          "name": "7 accesos directos conservados",
+          "status": "PASS"
+        },
+        {
+          "name": "Mercado muestra precios, inventario y saldo sin errores",
+          "status": "PASS"
+        },
+        {
+          "name": "Caza inicia con 3 enemigos y permite ataque",
+          "status": "PASS"
+        },
+        {
+          "name": "Cada criatura derrotada otorga material, no cobre",
+          "status": "PASS"
+        },
+        {
+          "name": "Retirada muestra botín, imágenes y vuelve al mapa",
+          "status": "PASS"
+        },
+        {
+          "name": "Botín permanece entre encuentros y victoria muestra resumen",
+          "status": "PASS"
+        },
+        {
+          "name": "Catálogos íntegros: 5 niveles, bestiario, 3 héroes y 7 edificios",
+          "status": "PASS"
+        },
+        {
+          "name": "Habilidades de 3 héroes: equipar, mejorar, modal y cambio",
+          "status": "PASS"
+        },
+        {
+          "name": "Compra real: descuenta 20 cobres, suma una poción y persiste",
+          "status": "PASS"
+        },
+        {
+          "name": "Guardar/exportar/importar partida y rechazar JSON inválido",
+          "status": "PASS"
+        },
+        {
+          "name": "Derrota total: sin materiales y regreso al mapa",
+          "status": "PASS"
+        },
+        {
+          "name": "Aislamiento de guardado: la caza no modifica la campaña",
+          "status": "PASS"
+        },
+        {
+          "name": "No hay excepciones JavaScript",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "passed": 17,
+      "failed": 0
+    },
+    "mobile": {
+      "date": "2026-11-05T12:55:51.626Z",
+      "device": "mobile",
+      "url": "http://127.0.0.1:8765/guardian-ruinas-beta/b15-013-caza-real/",
+      "checks": [
+        {
+          "name": "Página experimental y scripts cargan",
+          "status": "PASS"
+        },
+        {
+          "name": "Mapa de práctica abre sin tocar partidas reales",
+          "status": "PASS"
+        },
+        {
+          "name": "Ciudad usa imagen definitiva, con 7 recuadros y acceso directo",
+          "status": "PASS"
+        },
+        {
+          "name": "7 recuadros clicables aun con marcos visibles",
+          "status": "PASS"
+        },
+        {
+          "name": "7 accesos directos conservados",
+          "status": "PASS"
+        },
+        {
+          "name": "Mercado muestra precios, inventario y saldo sin errores",
+          "status": "PASS"
+        },
+        {
+          "name": "Caza inicia con 3 enemigos y permite ataque",
+          "status": "PASS"
+        },
+        {
+          "name": "Cada criatura derrotada otorga material, no cobre",
+          "status": "PASS"
+        },
+        {
+          "name": "Retirada muestra botín, imágenes y vuelve al mapa",
+          "status": "PASS"
+        },
+        {
+          "name": "Botín permanece entre encuentros y victoria muestra resumen",
+          "status": "PASS"
+        },
+        {
+          "name": "Catálogos íntegros: 5 niveles, bestiario, 3 héroes y 7 edificios",
+          "status": "PASS"
+        },
+        {
+          "name": "Habilidades de 3 héroes: equipar, mejorar, modal y cambio",
+          "status": "PASS"
+        },
+        {
+          "name": "Compra real: descuenta 20 cobres, suma una poción y persiste",
+          "status": "PASS"
+        },
+        {
+          "name": "Guardar/exportar/importar partida y rechazar JSON inválido",
+          "status": "PASS"
+        },
+        {
+          "name": "Derrota total: sin materiales y regreso al mapa",
+          "status": "PASS"
+        },
+        {
+          "name": "Aislamiento de guardado: la caza no modifica la campaña",
+          "status": "PASS"
+        },
+        {
+          "name": "No hay excepciones JavaScript",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "passed": 17,
+      "failed": 0
+    }
+  }
+}
