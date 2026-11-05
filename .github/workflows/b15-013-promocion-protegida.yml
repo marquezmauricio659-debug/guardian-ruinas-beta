@@ -1,4 +1,4 @@
-name: B15-013 · Validar candidata y proteger publicación
+name: B15-013 · Preparar publicación por propuesta
 
 on:
   push:
@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       confirmation:
-        description: 'Escribir PUBLICAR-CAZA-B15-013 para confirmar'
+        description: 'Escribir PREPARAR-CAZA-B15-013 para confirmar la propuesta (NO publica)'
         required: true
         type: string
 
@@ -76,11 +76,11 @@ jobs:
             echo "- Publicación actual: \`$PUBLISHED\`"
           } >> "$GITHUB_STEP_SUMMARY"
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            test "$INPUT_CONFIRMATION" = "PUBLICAR-CAZA-B15-013"
+            test "$INPUT_CONFIRMATION" = "PREPARAR-CAZA-B15-013"
             test "$INPUT_CANDIDATE" = "$CANDIDATE"
             test "$INPUT_PUBLIC" = "$PUBLISHED"
           fi
-  promocionar:
+  preparar_propuesta:
     if: github.event_name == 'workflow_dispatch'
     needs: verificar
     runs-on: ubuntu-24.04
@@ -92,7 +92,7 @@ jobs:
           ref: gh-pages
           fetch-depth: 0
           persist-credentials: true
-      - name: Respaldar publicación y transferir únicamente cacería
+      - name: Respaldar referencia y preparar rama para revisión
         env:
           CANDIDATE: ${{ needs.verificar.outputs.candidate_sha }}
           EXPECTED_PUBLIC: ${{ needs.verificar.outputs.public_sha }}
@@ -105,15 +105,22 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BACKUP="respaldo/b15-013-caza-$GITHUB_RUN_ID"
-          git tag -a "$BACKUP" "$EXPECTED_PUBLIC" -m "Version anterior a promocion B15-013 caza"
+          RAMA="publicacion/b15-013-caza-$GITHUB_RUN_ID"
+          git tag -a "$BACKUP" "$EXPECTED_PUBLIC" -m "Version antes de propuesta B15-013 caza"
           git push origin "refs/tags/$BACKUP"
-          git checkout "$CANDIDATE" -- b15-013-caza-real/
-          git add -- b15-013-caza-real/
+          git switch --create "$RAMA" "$EXPECTED_PUBLIC"
+          git restore --source="$CANDIDATE" --staged --worktree -- b15-013-caza-real/
           if git diff --cached --quiet; then
-            echo "La candidata es idéntica a lo publicado: sin cambios."
-          else
-            git commit -m "release(caza): candidata aprobada $CANDIDATE (respaldo $BACKUP)"
-            git push origin HEAD:gh-pages
+            echo "La candidata es idéntica a lo publicado: no se genera propuesta."
+            exit 0
           fi
-          echo "Respaldo creado: $BACKUP" >> "$GITHUB_STEP_SUMMARY"
-          echo "Solo se promovió b15-013-caza-real/. B15-013 estable permanece intacta." >> "$GITHUB_STEP_SUMMARY"
+          git commit -m "release(caza): candidata aprobada $CANDIDATE (respaldo $BACKUP)"
+          git push origin "HEAD:refs/heads/$RAMA"
+          {
+            echo "### Propuesta preparada; NO publicada"
+            echo "- Rama: $RAMA"
+            echo "- Respaldo anterior: $BACKUP"
+            echo "- Crear PR a gh-pages: https://github.com/$GITHUB_REPOSITORY/compare/gh-pages...$RAMA?expand=1"
+            echo "- Solo contiene cambios en b15-013-caza-real/."
+            echo "- No se escribió directamente en gh-pages."
+          } >> "$GITHUB_STEP_SUMMARY"
