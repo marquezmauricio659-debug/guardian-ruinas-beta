@@ -8,6 +8,13 @@ on:
       - 'b15-013/**'
       - 'tests/B15_013_caza_regresion.cjs'
       - '.github/workflows/b15-013-caza-regresion.yml'
+  pull_request:
+    branches: [gh-pages]
+    paths:
+      - 'b15-013-caza-real/**'
+      - 'b15-013/**'
+      - 'tests/B15_013_caza_regresion.cjs'
+      - '.github/workflows/b15-013-caza-regresion.yml'
   workflow_dispatch:
 
 permissions:
