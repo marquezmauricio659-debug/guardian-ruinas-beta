@@ -1,0 +1,64 @@
+name: Caza occidental · regresion automatica
+
+on:
+  push:
+    branches: [gh-pages]
+    paths:
+      - 'b15-013-caza-real/**'
+      - 'b15-013/**'
+      - 'tests/B15_013_caza_regresion.cjs'
+      - '.github/workflows/b15-013-caza-regresion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: caza-occidental-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Ejecutar en PC y movil sobre el commit publicado
+        shell: bash
+        run: |
+          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/guardian-ruinas-beta"
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory "$RUNNER_TEMP" >/tmp/b15-caza-http.log 2>&1 &
+          sleep 2
+          export TEST_URL=http://127.0.0.1:8765/guardian-ruinas-beta/b15-013-caza-real/
+          set +e
+          TEST_DEVICE=desktop node tests/B15_013_caza_regresion.cjs
+          DESKTOP=$?
+          TEST_DEVICE=mobile node tests/B15_013_caza_regresion.cjs
+          MOBILE=$?
+          node - <<'NODE'
+          const fs=require('fs');
+          for(const device of ['desktop','mobile']){
+            const file='test-results/b15-013/'+device+'/resultado.json';
+            if(!fs.existsSync(file)){console.log(device+': NO EJECUTADO');continue;}
+            const r=JSON.parse(fs.readFileSync(file));
+            const line=device+': '+r.passed+' aprobadas, '+r.failed+' fallidas';
+            console.log(line);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'### '+line+'\n'+r.checks.map(c=>'- '+(c.status==='PASS'?'✅':'❌')+' '+c.name).join('\n')+'\n');
+          }
+          NODE
+          test "$DESKTOP" -eq 0 && test "$MOBILE" -eq 0
+      - name: Adjuntar capturas e informes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: caza-regresion-${{ github.sha }}
+          path: test-results/b15-013/
+          if-no-files-found: warn
+          retention-days: 30
