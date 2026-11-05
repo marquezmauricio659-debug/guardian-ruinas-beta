@@ -1,8 +1,8 @@
-name: Caza occidental · regresion automatica
+name: Candidata B15-013 · control previo a publicacion
 
 on:
   push:
-    branches: [gh-pages]
+    branches: ['candidata/B15-013']
     paths:
       - 'b15-013-caza-real/**'
       - 'b15-013/**'
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: caza-occidental-${{ github.ref }}
+  group: candidata-b15-013-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
