@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: candidata-b15-013-${{ github.ref }}
@@ -30,7 +30,9 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Ejecutar en PC y movil sobre el commit publicado
+      - name: Ejecutar en PC y movil sobre la candidata
+        id: e2e
+        continue-on-error: true
         shell: bash
         run: |
           ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/guardian-ruinas-beta"
@@ -62,3 +64,25 @@ jobs:
           path: test-results/b15-013/
           if-no-files-found: warn
           retention-days: 30
+      - name: Registrar resultado por commit en GitHub
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p tests/results
+          node - <<'NODE'
+          const fs=require('fs');
+          const report={run:process.env.GITHUB_RUN_ID,sourceCommit:process.env.GITHUB_SHA,checkedAt:new Date().toISOString(),devices:{}};
+          for(const device of ['desktop','mobile']){
+            const filename='test-results/b15-013/'+device+'/resultado.json';
+            report.devices[device]=fs.existsSync(filename)?JSON.parse(fs.readFileSync(filename,'utf8')):{status:'NOT_EXECUTED'};
+          }
+          fs.writeFileSync('tests/results/B15_013_CANDIDATE_LAST_RUN.json',JSON.stringify(report,null,2)+'\n');
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/results/B15_013_CANDIDATE_LAST_RUN.json
+          git commit -m "test(results): evidencia candidata B15-013 [skip ci]" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+      - name: Bloquear candidata con fallos
+        if: always()
+        run: test "${{ steps.e2e.outcome }}" = "success"
