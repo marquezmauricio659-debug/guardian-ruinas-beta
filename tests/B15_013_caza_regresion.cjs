@@ -54,6 +54,7 @@ const openPractice = async () => {
   await check('Ciudad usa imagen definitiva, con 7 recuadros y acceso directo', async () => {
     await page.evaluate(() => enterMapCity());
     assert(await page.locator('#cityView').isVisible());
+    assert.match(await page.locator('#cityNavigationHint').innerText(), /Elegí un edificio en la imagen o desde los accesos directos/);
     const image = page.locator('.city-scene img');
     await image.evaluate(img => img.decode());
     const data = await image.evaluate(img => ({ src: img.currentSrc, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight }));
