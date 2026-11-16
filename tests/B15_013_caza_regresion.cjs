@@ -284,6 +284,7 @@ const openPractice = async () => {
     assert.equal(result.after,result.before);
     await page.locator('#huntLootDialog button').click();
   });
+  await check('PR RULESET RED: intentionally fail', async () => assert.fail('Intentional non-game regression')); 
   await check('No hay excepciones JavaScript', async () => assert.deepEqual(errors, []));
  } catch (error) {
   checks.push({ name: 'Infraestructura / ejecución', status: 'FAIL', error: String(error) });
