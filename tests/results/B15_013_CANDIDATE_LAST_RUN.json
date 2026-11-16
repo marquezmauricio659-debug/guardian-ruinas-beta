@@ -1,10 +1,10 @@
 {
-  "run": "42031049953",
-  "sourceCommit": "3b9e090fd27e1df56b257645c8aaa497ce56b70d",
-  "checkedAt": "2026-11-05T12:55:53.579Z",
+  "run": "43781397421",
+  "sourceCommit": "52ec0e5b378d18bc56a1bcf83681e1441a939997",
+  "checkedAt": "2026-11-16T00:38:17.015Z",
   "devices": {
     "desktop": {
-      "date": "2026-11-05T12:55:44.241Z",
+      "date": "2026-11-16T00:38:07.800Z",
       "device": "desktop",
       "url": "http://127.0.0.1:8765/guardian-ruinas-beta/b15-013-caza-real/",
       "checks": [
@@ -82,7 +82,7 @@
       "failed": 0
     },
     "mobile": {
-      "date": "2026-11-05T12:55:51.626Z",
+      "date": "2026-11-16T00:38:15.329Z",
       "device": "mobile",
       "url": "http://127.0.0.1:8765/guardian-ruinas-beta/b15-013-caza-real/",
       "checks": [
