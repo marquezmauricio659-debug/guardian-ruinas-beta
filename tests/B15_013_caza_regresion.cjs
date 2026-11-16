@@ -1,4 +1,5 @@
 'use strict';
+// ENSAYO DE PROTECCIÓN: cambio inocuo para verificar regression aprobada, sin modificar el juego.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -284,7 +285,6 @@ const openPractice = async () => {
     assert.equal(result.after,result.before);
     await page.locator('#huntLootDialog button').click();
   });
-  await check('ENSAYO CONTROLADO: regression fallida debe bloquear PR', async () => { assert.fail('Fallo deliberado de CI; el código del juego no se modificó'); });
   await check('No hay excepciones JavaScript', async () => assert.deepEqual(errors, []));
  } catch (error) {
   checks.push({ name: 'Infraestructura / ejecución', status: 'FAIL', error: String(error) });
