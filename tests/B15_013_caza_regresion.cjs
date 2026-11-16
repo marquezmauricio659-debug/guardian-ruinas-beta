@@ -51,6 +51,22 @@ const openPractice = async () => {
     assert(await page.locator('#levelMap').isVisible());
     assert.equal(await page.locator('#levelNodes button[data-level]').count(), 5);
   });
+  await check('Mapa regional del ciervo: imagen disponible y caza no marcada en preparacion', async () => {
+    await openPractice();
+    const imageUrl = new URL('mapa-varkhul-caza-ciervo.png', url).href;
+    const response = await page.request.get(imageUrl);
+    assert(response.ok(), 'El mapa del ciervo falta en la rama publica: HTTP ' + response.status());
+    const image = await page.evaluate(async source => {
+      const img = new Image(); img.src = source;
+      await img.decode();
+      return { width: img.naturalWidth, height: img.naturalHeight };
+    }, imageUrl);
+    assert(image.width >= 1400 && image.height >= 800, 'No se subio el mapa regional completo');
+    const css = await page.locator('.map-art').evaluate(el => getComputedStyle(el).backgroundImage);
+    assert(css.includes('mapa-varkhul-caza-ciervo.png'), 'El mapa no utiliza el nuevo recurso');
+    const label = await page.locator('#levelNodes .level-stop button[data-hunt]').locator('..').locator('.level-label small').innerText();
+    assert.equal(label.trim(), 'Disponible');
+  });
   await check('Ciudad usa imagen definitiva, con 7 recuadros y acceso directo', async () => {
     await page.evaluate(() => enterMapCity());
     assert(await page.locator('#cityView').isVisible());
