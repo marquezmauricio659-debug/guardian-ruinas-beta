@@ -74,6 +74,21 @@ const openPractice = async () => {
     const label = await page.locator('#levelNodes .level-stop button[data-hunt]').locator('..').locator('.level-label small').innerText();
     assert.equal(label.trim(), 'Disponible');
   });
+  await check('Mapa: seis centros alineados, seleccion por clic y estados de progreso', async () => {
+    await openPractice();
+    const expected=[[19,69.3],[36.4,46.1],[54,34.7],[70.7,41.4],[86.2,22],[13.3,18.5]];
+    const nodes=page.locator('#levelNodes .level-stop button');
+    assert.equal(await nodes.count(),6);
+    const geometry=await page.evaluate(()=>{const m=document.querySelector('.map-art'),r=m.getBoundingClientRect();return [...document.querySelectorAll('#levelNodes .level-stop button')].map(b=>{const q=b.getBoundingClientRect();return {x:100*(q.x+q.width/2-r.x-m.clientLeft)/m.clientWidth,y:100*(q.y+q.height/2-r.y-m.clientTop)/m.clientHeight,w:q.width,h:q.height}})});
+    console.log('MAP_GEOMETRY',JSON.stringify(geometry));
+    for(let i=0;i<6;i++){assert(Math.abs(geometry[i].x-expected[i][0])<0.8);assert(Math.abs(geometry[i].y-expected[i][1])<0.8);assert(geometry[i].w>=44&&geometry[i].h>=44);}
+    await page.screenshot({path:path.join(dir,'mapa-ciervo.png'),fullPage:true});
+    for(let i=1;i<=5;i++){await page.locator('button[data-level="'+i+'"]').click();assert.equal(await page.evaluate(()=>selectedMapLevel),i);}
+    await page.locator('button[data-hunt]').click();assert.equal(await page.evaluate(()=>selectedMapLevel),7);
+    assert.equal(await page.locator('#mapAction').innerText(),'Entrar a Caza occidental');
+    await page.locator('#castleEntry').click();assert.equal(await page.evaluate(()=>selectedMapLevel),6);
+    await openPractice();
+  });
   await check('Ciudad usa imagen definitiva, con 7 recuadros y acceso directo', async () => {
     await page.evaluate(() => enterMapCity());
     assert(await page.locator('#cityView').isVisible());
