@@ -89,6 +89,30 @@ const openPractice = async () => {
     await page.locator('#castleEntry').click();assert.equal(await page.evaluate(()=>selectedMapLevel),6);
     await openPractice();
   });
+  await check('Mapa campaña: estados reales sobre carteles impresos y bloqueos intactos', async () => {
+    await openPractice();
+    const original=await page.evaluate(()=>localStorage.getItem(slotKey(1)));
+    try {
+      await page.evaluate(()=>{
+        const saved=readSlot(4);
+        localStorage.setItem(slotKey(1),JSON.stringify({...saved,label:'Ensayo de estados',profile:defaultProfile('knight'),state:{...saved.state,encounter:1,over:false,won:false},levelProgress:{version:3,completed:[1]}}));
+        openLevelMap(1);
+      });
+      const states=await page.evaluate(()=>[...document.querySelectorAll('#levelNodes .level-stop')].map(n=>({text:n.querySelector('small').textContent,disabled:n.querySelector('button').disabled,opacity:getComputedStyle(n.querySelector('.level-label')).opacity})));
+      assert.deepEqual(states.map(x=>x.text),['Completado','Disponible','Bloqueado','Bloqueado','Bloqueado','Tras nivel 5']);
+      assert.deepEqual(states.map(x=>x.disabled),[false,false,true,true,true,true]);
+      assert.deepEqual(states.map(x=>x.opacity),['1','0','1','1','1','1']);
+      assert(await page.locator('#castleEntry').evaluate(e=>e.classList.contains('locked')));
+      await page.screenshot({path:path.join(dir,'mapa-campana.png'),fullPage:true});
+      if(device==='mobile'){
+        await page.locator('.map-scroll').evaluate(e=>e.scrollLeft=e.scrollWidth);
+        await page.screenshot({path:path.join(dir,'mapa-campana-derecha.png'),fullPage:true});
+      }
+    } finally {
+      await page.evaluate(value=>{if(value===null)localStorage.removeItem(slotKey(1));else localStorage.setItem(slotKey(1),value)},original);
+      await openPractice();
+    }
+  });
   await check('Ciudad usa imagen definitiva, con 7 recuadros y acceso directo', async () => {
     await page.evaluate(() => enterMapCity());
     assert(await page.locator('#cityView').isVisible());
