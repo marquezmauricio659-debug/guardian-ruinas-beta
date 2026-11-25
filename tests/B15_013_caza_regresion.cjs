@@ -67,6 +67,10 @@ const openPractice = async () => {
     assert(image.width >= 1400 && image.height >= 800, 'No se subio el mapa regional completo');
     const css = await page.locator('.map-art').evaluate(el => getComputedStyle(el).backgroundImage);
     assert(css.includes('mapa-varkhul-caza-ciervo.png'), 'El mapa no utiliza el nuevo recurso');
+    const match = css.match(/url\(["']?([^"')]+)["']?\)/);
+    assert(match, 'Fondo regional sin URL');
+    const resolved = new URL(match[1], new URL('../b15-013/', url)).href;
+    assert.equal(resolved, imageUrl, 'La ruta CSS del fondo apunta fuera de la carpeta del recurso');
     const label = await page.locator('#levelNodes .level-stop button[data-hunt]').locator('..').locator('.level-label small').innerText();
     assert.equal(label.trim(), 'Disponible');
   });
