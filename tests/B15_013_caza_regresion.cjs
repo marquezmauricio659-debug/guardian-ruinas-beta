@@ -39,6 +39,9 @@ const openPractice = async () => {
   page = await context.newPage();
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+  // Diagnóstico temporal: conservar la URL exacta de cada recurso HTTP fallido.
+  page.on('response', response => { if (response.status() >= 400) console.error('HTTP_DIAGNOSTIC', response.status(), response.url()); });
+  page.on('requestfailed', request => console.error('REQUEST_DIAGNOSTIC', request.url(), request.failure()?.errorText));
   page.setDefaultTimeout(12000);
   await check('Página experimental y scripts cargan', async () => {
     const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
