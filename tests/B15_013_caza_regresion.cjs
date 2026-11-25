@@ -39,6 +39,9 @@ const openPractice = async () => {
   page = await context.newPage();
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+  // Diagnóstico temporal: conservar la URL exacta de cada recurso HTTP fallido.
+  page.on('response', response => { if (response.status() >= 400) console.error('HTTP_DIAGNOSTIC', response.status(), response.url()); });
+  page.on('requestfailed', request => console.error('REQUEST_DIAGNOSTIC', request.url(), request.failure()?.errorText));
   page.setDefaultTimeout(12000);
   await check('Página experimental y scripts cargan', async () => {
     const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
@@ -50,6 +53,65 @@ const openPractice = async () => {
     await openPractice();
     assert(await page.locator('#levelMap').isVisible());
     assert.equal(await page.locator('#levelNodes button[data-level]').count(), 5);
+  });
+  await check('Mapa regional del ciervo: imagen disponible y caza no marcada en preparacion', async () => {
+    await openPractice();
+    const imageUrl = new URL('mapa-varkhul-caza-ciervo.png', url).href;
+    const response = await page.request.get(imageUrl);
+    assert(response.ok(), 'El mapa del ciervo falta en la rama publica: HTTP ' + response.status());
+    const image = await page.evaluate(async source => {
+      const img = new Image(); img.src = source;
+      await img.decode();
+      return { width: img.naturalWidth, height: img.naturalHeight };
+    }, imageUrl);
+    assert(image.width >= 1400 && image.height >= 800, 'No se subio el mapa regional completo');
+    const css = await page.locator('.map-art').evaluate(el => getComputedStyle(el).backgroundImage);
+    assert(css.includes('mapa-varkhul-caza-ciervo.png'), 'El mapa no utiliza el nuevo recurso');
+    const match = css.match(/url\(["']?([^"')]+)["']?\)/);
+    assert(match, 'Fondo regional sin URL');
+    const resolved = new URL(match[1], new URL('../b15-013/', url)).href;
+    assert.equal(resolved, imageUrl, 'La ruta CSS del fondo apunta fuera de la carpeta del recurso');
+    const label = await page.locator('#levelNodes .level-stop button[data-hunt]').locator('..').locator('.level-label small').innerText();
+    assert.equal(label.trim(), 'Disponible');
+  });
+  await check('Mapa: seis centros alineados, seleccion por clic y estados de progreso', async () => {
+    await openPractice();
+    const expected=[[19,69.3],[36.4,46.1],[54,34.7],[70.7,41.4],[86.2,22],[13.3,18.5]];
+    const nodes=page.locator('#levelNodes .level-stop button');
+    assert.equal(await nodes.count(),6);
+    const geometry=await page.evaluate(()=>{const m=document.querySelector('.map-art'),r=m.getBoundingClientRect();return [...document.querySelectorAll('#levelNodes .level-stop button')].map(b=>{const q=b.getBoundingClientRect();return {x:100*(q.x+q.width/2-r.x-m.clientLeft)/m.clientWidth,y:100*(q.y+q.height/2-r.y-m.clientTop)/m.clientHeight,w:q.width,h:q.height}})});
+    console.log('MAP_GEOMETRY',JSON.stringify(geometry));
+    for(let i=0;i<6;i++){assert(Math.abs(geometry[i].x-expected[i][0])<0.8);assert(Math.abs(geometry[i].y-expected[i][1])<0.8);assert(geometry[i].w>=44&&geometry[i].h>=44);}
+    await page.screenshot({path:path.join(dir,'mapa-ciervo.png'),fullPage:true});
+    for(let i=1;i<=5;i++){await page.locator('button[data-level="'+i+'"]').click();assert.equal(await page.evaluate(()=>selectedMapLevel),i);}
+    await page.locator('button[data-hunt]').click();assert.equal(await page.evaluate(()=>selectedMapLevel),7);
+    assert.equal(await page.locator('#mapAction').innerText(),'Entrar a Caza occidental');
+    await page.locator('#castleEntry').click();assert.equal(await page.evaluate(()=>selectedMapLevel),6);
+    await openPractice();
+  });
+  await check('Mapa campaña: estados reales sobre carteles impresos y bloqueos intactos', async () => {
+    await openPractice();
+    const original=await page.evaluate(()=>localStorage.getItem(slotKey(1)));
+    try {
+      await page.evaluate(()=>{
+        const saved=readSlot(4);
+        localStorage.setItem(slotKey(1),JSON.stringify({...saved,label:'Ensayo de estados',profile:defaultProfile('knight'),state:{...saved.state,encounter:1,over:false,won:false},levelProgress:{version:3,completed:[1]}}));
+        openLevelMap(1);
+      });
+      const states=await page.evaluate(()=>[...document.querySelectorAll('#levelNodes .level-stop')].map(n=>({text:n.querySelector('small').textContent,disabled:n.querySelector('button').disabled,opacity:getComputedStyle(n.querySelector('.level-label')).opacity})));
+      assert.deepEqual(states.map(x=>x.text),['Completado','Disponible','Bloqueado','Bloqueado','Bloqueado','Tras nivel 5']);
+      assert.deepEqual(states.map(x=>x.disabled),[false,false,true,true,true,true]);
+      assert.deepEqual(states.map(x=>x.opacity),['1','0','1','1','1','1']);
+      assert(await page.locator('#castleEntry').evaluate(e=>e.classList.contains('locked')));
+      await page.screenshot({path:path.join(dir,'mapa-campana.png'),fullPage:true});
+      if(device==='mobile'){
+        await page.locator('.map-scroll').evaluate(e=>e.scrollLeft=e.scrollWidth);
+        await page.screenshot({path:path.join(dir,'mapa-campana-derecha.png'),fullPage:true});
+      }
+    } finally {
+      await page.evaluate(value=>{if(value===null)localStorage.removeItem(slotKey(1));else localStorage.setItem(slotKey(1),value)},original);
+      await openPractice();
+    }
   });
   await check('Ciudad usa imagen definitiva, con 7 recuadros y acceso directo', async () => {
     await page.evaluate(() => enterMapCity());

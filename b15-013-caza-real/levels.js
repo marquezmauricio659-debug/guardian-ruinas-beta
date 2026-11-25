@@ -1,10 +1,10 @@
 /* B15-012: cinco niveles, tres encuentros cada uno; mapa y guardados aislados de B15-011. */
 const LEVEL_CATALOG=[
-{id:1,name:'Ruinas del lago',description:'Ruinas junto al lago. Tres encuentros introductorios.',implemented:true,x:18.65,y:68.7},
-{id:2,name:'Bosque antiguo',description:'El mismo ecosistema con combinaciones más exigentes.',implemented:true,x:35.86,y:45.7},
-{id:3,name:'Cascadas de las cumbres',description:'Terreno montañoso; águilas y grandes bestias.',implemented:true,x:53.76,y:35.1},
-{id:4,name:'Camino a la fortaleza',description:'Paso rocoso protegido por unidades rápidas y resistentes.',implemented:true,x:70.5,y:41.4},
-{id:5,name:'Fortaleza de Varkhul',description:'Asedio final: no se restauran recursos entre encuentros.',implemented:true,x:86,y:22.3}
+{id:1,name:'Ruinas del lago',description:'Ruinas junto al lago. Tres encuentros introductorios.',implemented:true,x:19.0,y:69.3,statusGap:5.6},
+{id:2,name:'Bosque antiguo',description:'El mismo ecosistema con combinaciones más exigentes.',implemented:true,x:36.4,y:46.1,statusGap:5.6},
+{id:3,name:'Cascadas de las cumbres',description:'Terreno montañoso; águilas y grandes bestias.',implemented:true,x:54.0,y:34.7,statusGap:7.2},
+{id:4,name:'Camino a la fortaleza',description:'Paso rocoso protegido por unidades rápidas y resistentes.',implemented:true,x:70.7,y:41.4,statusGap:7.1},
+{id:5,name:'Fortaleza de Varkhul',description:'Asedio final: no se restauran recursos entre encuentros.',implemented:true,x:86.2,y:22.0,statusGap:7.1}
 ];
 const LEVEL_ENCOUNTERS=[
 [['wolf','shroom'],['fox','shroom'],['wolf','lynx']],
@@ -79,10 +79,10 @@ function renderLevelMap(){
   const completed=progress.completed.includes(level.id),unlocked=mapSlot===4||progress.unlocked.includes(level.id),selected=selectedMapLevel===level.id;
   const status=completed?'completed':!unlocked?'locked':'available';
   const label=completed?'Completado':unlocked?'Disponible':'Bloqueado';
-  return '<div class="level-stop '+status+(selected?' selected':'')+'" style="--x:'+level.x+'%;--y:'+level.y+'%"><button data-level="'+level.id+'" '+(!unlocked?'disabled':'')+' onclick="selectMapLevel('+level.id+')" aria-label="Nivel '+level.id+': '+label+'"><strong>'+level.id+'</strong><span aria-hidden="true">'+(completed?'✓':!unlocked?'🔒':'◆')+'</span></button><span class="level-label">'+level.name+'<small>'+label+'</small></span></div>';
+  return '<div class="level-stop '+status+(selected?' selected':'')+'" style="--x:'+level.x+'%;--y:'+level.y+'%;--status-gap:'+level.statusGap+'cqw"><button data-level="'+level.id+'" '+(!unlocked?'disabled':'')+' onclick="selectMapLevel('+level.id+')" aria-label="Nivel '+level.id+': '+label+'"><strong>'+level.id+'</strong><span aria-hidden="true">'+(completed?'✓':!unlocked?'🔒':'◆')+'</span></button><span class="level-label">'+level.name+'<small>'+label+'</small></span></div>';
  }).join('') + (()=>{
   const available=mapSlot===4||progress.cityUnlocked;
-  return '<div class="level-stop '+(available?'available':'locked')+(selectedMapLevel===7?' selected':'')+'" style="--x:13%;--y:20%"><button data-hunt="1" '+(!available?'disabled':'')+' onclick="selectMapHunt()" aria-label="Zona de caza occidental: '+(available?'Disponible':'Bloqueada')+'"><strong>7</strong><span aria-hidden="true">'+(available?'◆':'🔒')+'</span></button><span class="level-label">Caza occidental<small>'+(available?'En preparación':'Tras nivel 5')+'</small></span></div>';
+  return '<div class="level-stop '+(available?'available':'locked')+(selectedMapLevel===7?' selected':'')+'" style="--x:13.3%;--y:18.5%;--status-gap:6.6cqw"><button data-hunt="1" '+(!available?'disabled':'')+' onclick="selectMapHunt()" aria-label="Zona de caza occidental: '+(available?'Disponible':'Bloqueada')+'"><strong>7</strong><span aria-hidden="true">'+(available?'◆':'🔒')+'</span></button><span class="level-label">Caza occidental<small>'+(available?'Disponible':'Tras nivel 5')+'</small></span></div>';
  })();
  const huntSelected=selectedMapLevel===7;
  const citySelected=selectedMapLevel===6;
@@ -91,9 +91,9 @@ function renderLevelMap(){
  const completed=progress.completed.includes(selectedMapLevel);
  $('mapAction').disabled=(citySelected?(mapSlot!==4&&!progress.cityUnlocked):(huntSelected?(mapSlot!==4&&!progress.cityUnlocked):(mapSlot!==4&&!progress.unlocked.includes(selectedMapLevel))));
  $('mapAction').textContent=huntSelected?'Entrar a Caza occidental':citySelected?'Entrar a la ciudad':mapSlot===4?'Probar nivel '+selectedMapLevel:completed?'Repetir nivel '+selectedMapLevel:'Jugar nivel '+selectedMapLevel;
- $('mapDescription').textContent=huntSelected?'Zona opcional del bosque occidental. El acceso al combate se añadirá después de validar este marcador.':citySelected?(mapSlot===4?'Entrada de prueba a la ciudad.':'La ciudad se desbloquea al superar el nivel 5.'):(level.description+(selectedMapLevel===5?' Las heridas, el maná y los personajes caídos persisten hasta terminar el nivel.':''));
+ $('mapDescription').textContent=huntSelected?'Zona opcional del bosque occidental. Combate experimental de tres encuentros disponible cuando se desbloquee el acceso.':citySelected?(mapSlot===4?'Entrada de prueba a la ciudad.':'La ciudad se desbloquea al superar el nivel 5.'):(level.description+(selectedMapLevel===5?' Las heridas, el maná y los personajes caídos persisten hasta terminar el nivel.':''));
  const victory=$('levelMap').querySelector('.map-details small');
- if(victory)victory.textContent=huntSelected?'ZONA DE CAZA · ACCESO EN PREPARACIÓN':citySelected?'CASTILLO · CIUDAD DEL REINO':(progress.cityUnlocked?'CIUDAD DESBLOQUEADA · ':'')+'NIVEL '+selectedMapLevel+' · '+level.name.toUpperCase();
+ if(victory)victory.textContent=huntSelected?'ZONA DE CAZA · COMBATE EXPERIMENTAL':citySelected?'CASTILLO · CIUDAD DEL REINO':(progress.cityUnlocked?'CIUDAD DESBLOQUEADA · ':'')+'NIVEL '+selectedMapLevel+' · '+level.name.toUpperCase();
  $('restoreReplay').hidden=mapSlot===4||!saved.replayBackup;
 }
 function selectMapLevel(id){
